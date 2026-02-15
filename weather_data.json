@@ -2,15 +2,14 @@
     "forecast": {
         "latitude": 42.497044,
         "longitude": -70.894745,
-        "generationtime_ms": 0.1214742660522461,
+        "generationtime_ms": 0.15842914581298828,
         "utc_offset_seconds": -18000,
         "timezone": "America/New_York",
         "timezone_abbreviation": "GMT-5",
         "elevation": 5.0,
         "hourly_units": {
             "time": "iso8601",
-            "temperature_2m": "\u00b0F",
-            "windspeed_10m": "mp/h"
+            "temperature_2m": "\u00b0F"
         },
         "hourly": {
             "time": [
@@ -64,57 +63,10 @@
                 26.6,
                 27.5,
                 27.7
-            ],
-            "windspeed_10m": [
-                6.7,
-                5.9,
-                5.4,
-                8.4,
-                6.4,
-                5.8,
-                6.9,
-                6.3,
-                6.2,
-                10.0,
-                12.6,
-                11.4,
-                6.4,
-                5.3,
-                4.4,
-                5.4,
-                5.4,
-                5.0,
-                4.9,
-                6.5,
-                8.4,
-                7.7,
-                7.1,
-                7.9
-            ]
-        },
-        "daily_units": {
-            "time": "iso8601",
-            "sunrise": "iso8601",
-            "sunset": "iso8601"
-        },
-        "daily": {
-            "time": [
-                "2026-02-15"
-            ],
-            "sunrise": [
-                "2026-02-15T06:39"
-            ],
-            "sunset": [
-                "2026-02-15T17:15"
             ]
         }
     },
-    "current_actual": {
-        "temp": 33.8,
-        "wind": 3.4448808239999997
-    },
-    "sun_times": {
-        "sunrise": "2026-02-15T06:39",
-        "sunset": "2026-02-15T17:15"
-    }
+    "tide_values": [],
+    "high": 32.6,
+    "low": 23.3
 }
