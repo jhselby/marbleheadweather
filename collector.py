@@ -1,4 +1,4 @@
-ximport requests
+import requests
 import json
 
 # Marblehead, MA Coordinates
