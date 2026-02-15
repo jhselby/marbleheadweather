@@ -5,33 +5,33 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center;}
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 20px 0; text-align: center;}
     </style>
 </head>
 <body>
     <h1>Wyman Cove Monitor</h1>
-    <h3 id="hl">Loading data...</h3>
+    <div class="card"><h3 id="hl">Loading Wyman Cove Data...</h3></div>
     <div class="card"><canvas id="myChart"></canvas></div>
 
     <script>
         fetch('weather_data.json?t=' + Date.now())
         .then(r => r.json())
         .then(data => {
-            // Safety check: if data is missing, tell us on screen instead of going blank
-            if (!data.temp_values || !data.tide_values) {
-                document.getElementById('hl').innerText = "Data file found, but contents are empty or wrong.";
-                return;
-            }
+            // Target the structure seen in your screenshot
+            const hourly = data.forecast.hourly;
+            const labels = hourly.time.slice(0, 24).map(t => t.split("T")[1]);
+            const temps = hourly.temperature_2m.slice(0, 24);
+            const tides = data.tide_values || [];
 
-            document.getElementById('hl').innerText = `High: ${data.high}°F | Low: ${data.low}°F`;
+            document.getElementById('hl').innerText = `Today's High: ${data.high}°F | Low: ${data.low}°F`;
 
             new Chart(document.getElementById('myChart'), {
                 type: 'line',
                 data: {
-                    labels: data.temp_labels,
+                    labels: labels,
                     datasets: [
-                        { label: 'Temp °F', data: data.temp_values, borderColor: '#ff9800', yAxisID: 'y', tension: 0.3 },
-                        { label: 'Tide ft', data: data.tide_values, borderColor: '#2196F3', backgroundColor: 'rgba(33, 150, 243, 0.2)', fill: true, yAxisID: 'y1', tension: 0.4 }
+                        { label: 'Temp °F', data: temps, borderColor: '#ff9800', yAxisID: 'y', tension: 0.3 },
+                        { label: 'Tide ft', data: tides, borderColor: '#2196F3', backgroundColor: 'rgba(33, 150, 243, 0.2)', fill: true, yAxisID: 'y1', tension: 0.4 }
                     ]
                 },
                 options: {
@@ -42,9 +42,7 @@
                 }
             });
         })
-        .catch(err => {
-            document.getElementById('hl').innerText = "Error: " + err.message;
-        });
+        .catch(err => { document.getElementById('hl').innerText = "Data Sync Error: " + err.message; });
     </script>
 </body>
 </html>
