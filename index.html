@@ -5,69 +5,48 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .sun-times { display: flex; justify-content: space-around; font-weight: bold; color: #555; }
-        .timestamp { text-align: right; font-size: 0.8em; color: #888; margin-bottom: 10px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center;}
+        .hl-summary { font-size: 1.2em; font-weight: bold; color: #333; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <h1>Wyman Cove Monitor</h1>
-    <div id="last-updated" class="timestamp">Loading...</div>
+    <div id="hl" class="hl-summary">High: --°F | Low: --°F</div>
     
-    <div class="card sun-times">
-        <span id="sunrise">Sunrise: --:--</span>
-        <span id="sunset">Sunset: --:--</span>
-    </div>
-
-    <div class="card">
-        <h3>Local Reference (Beverly Airport)</h3>
-        <p id="current-obs">Waiting for data...</p>
-    </div>
-
     <div class="card"><canvas id="tempChart"></canvas></div>
 
     <script>
-        // Adding '?t=' ensures the browser doesn't show you old, broken data
-        fetch('weather_data.json?t=' + Date.now())
-        .then(response => {
-            if (!response.ok) throw new Error("Could not find weather_data.json");
-            return response.json();
-        })
-        .then(data => {
-            document.getElementById('last-updated').innerText = "Last Updated: " + new Date().toLocaleTimeString();
+        fetch('weather_data.json?t=' + Date.now()).then(r => r.json()).then(data => {
+            document.getElementById('hl').innerText = `Today's High: ${data.high_low.high.toFixed(1)}°F | Low: ${data.high_low.low.toFixed(1)}°F`;
 
-            // Safety check: only update sun times if they exist in the data
-            if (data.forecast && data.forecast.daily) {
-                const sun = data.forecast.daily;
-                const format = (iso) => new Date(iso).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                document.getElementById('sunrise').innerText = "Sunrise: " + format(sun.sunrise[0]);
-                document.getElementById('sunset').innerText = "Sunset: " + format(sun.sunset[0]);
-            }
-
-            // Update Current Conditions
-            if (data.current_actual) {
-                const actual = data.current_actual;
-                document.getElementById('current-obs').innerHTML = `<strong>Temp:</strong> ${actual.temp.toFixed(1)}°F | <strong>Wind:</strong> ${actual.wind.toFixed(1)} mph`;
-            }
-
-            // Build Chart
-            const ctx = document.getElementById('tempChart').getContext('2d');
-            new Chart(ctx, {
+            new Chart(document.getElementById('tempChart'), {
                 type: 'line',
                 data: {
                     labels: data.forecast.hourly.time.map(t => new Date(t).getHours() + ":00"),
-                    datasets: [{
-                        label: 'Wyman Cove Forecast (°F)',
-                        data: data.forecast.hourly.temperature_2m,
-                        borderColor: '#2196F3',
-                        tension: 0.3
-                    }]
+                    datasets: [
+                        {
+                            label: 'Temp (°F)',
+                            data: data.forecast.hourly.temperature_2m,
+                            borderColor: '#ff9800',
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: 'Tide (ft)',
+                            data: data.tides,
+                            borderColor: '#2196F3',
+                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                            fill: true,
+                            yAxisID: 'y1',
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Temp °F'} },
+                        y1: { type: 'linear', display: true, position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'Tide Feet'} }
+                    }
                 }
             });
-        })
-        .catch(err => {
-            document.getElementById('current-obs').innerHTML = "<span style='color:red'>Error: " + err.message + "</span>";
-            console.error(err);
         });
     </script>
 </body>
