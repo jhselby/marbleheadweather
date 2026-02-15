@@ -1,49 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Wyman Cove Weather</title>
+    <title>Wyman Cove Hyperlocal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f9; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1 { color: #333; }
+        .sun-times { display: flex; justify-content: space-around; font-weight: bold; color: #555; }
     </style>
 </head>
 <body>
     <h1>Wyman Cove Monitor</h1>
     
-    <div class="card">
-        <h3>Current Conditions (Beverly Airport)</h3>
-        <p id="current-obs">Loading latest reality...</p>
+    <div class="card sun-times">
+        <span id="sunrise">Sunrise: --:--</span>
+        <span id="sunset">Sunset: --:--</span>
     </div>
 
     <div class="card">
-        <canvas id="tempChart"></canvas>
+        <h3>Local Reference (Beverly Airport)</h3>
+        <p id="current-obs">Loading regional data...</p>
     </div>
+
+    <div class="card"><canvas id="tempChart"></canvas></div>
 
     <script>
         fetch('weather_data.json').then(r => r.json()).then(data => {
-            // Display the "Actual" data we just pulled
-            const actual = data.current_actual;
-            document.getElementById('current-obs').innerHTML = 
-                `<strong>Temperature:</strong> ${actual.temp.toFixed(1)}°F <br>` +
-                `<strong>Wind Speed:</strong> ${actual.wind.toFixed(1)} mph`;
+            // Sun Times Logic
+            const sun = data.forecast.daily;
+            document.getElementById('sunrise').innerText = "Sunrise: " + new Date(sun.sunrise[0]).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('sunset').innerText = "Sunset: " + new Date(sun.sunset[0]).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-            // Setup the Forecast Chart
-            const ctx = document.getElementById('tempChart').getContext('2d');
-            new Chart(ctx, {
+            // Actuals Logic
+            const actual = data.current_actual;
+            document.getElementById('current-obs').innerHTML = `Temp: ${actual.temp.toFixed(1)}°F | Wind: ${actual.wind.toFixed(1)} mph`;
+
+            // Chart Logic
+            new Chart(document.getElementById('tempChart'), {
                 type: 'line',
                 data: {
                     labels: data.forecast.hourly.time.map(t => new Date(t).getHours() + ":00"),
                     datasets: [{
-                        label: 'Forecasted Temp (°F)',
+                        label: 'Wyman Cove Forecast (°F)',
                         data: data.forecast.hourly.temperature_2m,
-                        borderColor: '#ff6384',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        fill: true
+                        borderColor: '#2196F3',
+                        fill: false
                     }]
-                },
-                options: { plugins: { title: { display: true, text: 'Next 24 Hours' } } }
+                }
             });
         });
     </script>
