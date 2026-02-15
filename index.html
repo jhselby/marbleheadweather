@@ -27,7 +27,8 @@
         fetch('weather_data.json?t=' + Date.now())
         .then(r => r.json())
         .then(data => {
-            // Update the text summary and sun times
+            // Mapping paths based on your JSON structure
+            // High/Low and Sun times are at the top level
             document.getElementById('hl').innerText = `Today's High: ${data.high}°F | Low: ${data.low}°F`;
             document.getElementById('sun').innerText = `Sunrise: ${data.sunrise} | Sunset: ${data.sunset}`;
 
@@ -43,4 +44,46 @@
                             borderColor: '#ff9800', 
                             backgroundColor: '#ff9800',
                             yAxisID: 'y', 
-                            tension:
+                            tension: 0.3,
+                            pointRadius: 3
+                        },
+                        { 
+                            label: 'Tide ft', 
+                            data: data.tide_values, 
+                            borderColor: '#2196F3', 
+                            backgroundColor: 'rgba(33, 150, 243, 0.3)', 
+                            fill: true, 
+                            yAxisID: 'y1', 
+                            tension: 0.4,
+                            pointRadius: 0 
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { 
+                            type: 'linear', 
+                            position: 'left', 
+                            title: { display: true, text: 'Temperature (°F)' } 
+                        },
+                        y1: { 
+                            type: 'linear', 
+                            position: 'right', 
+                            grid: { drawOnChartArea: false }, 
+                            title: { display: true, text: 'Tide Height (ft)' },
+                            // Adjusts scale so the wave is visible
+                            suggestedMin: 0
+                        }
+                    }
+                }
+            });
+        })
+        .catch(err => {
+            document.getElementById('hl').innerText = "Sync Error: Check Data File";
+            console.error(err);
+        });
+    </script>
+</body>
+</html>
