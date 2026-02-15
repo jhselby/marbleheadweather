@@ -5,7 +5,7 @@ LAT, LON = 42.5014, -70.8750
 
 def fetch_weather():
     # 1. Get the Forecast (Model Data)
-    forecast_url = f"https://api.open-meteo.com/v1/forecast?latitude={LAT}&longitude={LON}&hourly=temperature_2m,windspeed_10m&timezone=America%2FNew_York&forecast_days=1"
+    forecast_url = f"forecast_url = f"https://api.open-meteo.com/v1/forecast?latitude={LAT}&longitude={LON}&hourly=temperature_2m,windspeed_10m&timezone=America%2FNew_York&forecast_days=1&temperature_unit=fahrenheit&wind_speed_unit=mph"
     
     # 2. Get the Actuals (NWS Beverly Airport Station)
     # NWS requires a 'User-Agent' header (just a name for your app)
