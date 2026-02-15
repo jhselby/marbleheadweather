@@ -19,10 +19,11 @@
             // 1. Update High/Low
             document.getElementById('hl').innerText = `Today's High: ${data.high_low.high.toFixed(1)}°F | Low: ${data.high_low.low.toFixed(1)}°F`;
 
-            // 2. Align Tides (Taking only the top of each hour to match weather)
-            const labels = data.forecast.hourly.time.map(t => new Date(t).getHours() + ":00");
-            const tempValues = data.forecast.hourly.temperature_2m;
-            // This line ensures we only take the tide points that match our 24 hours
+            // 2. Prepare Labels and Data
+            const labels = data.forecast.hourly.time.slice(0, 24).map(t => new Date(t).getHours() + ":00");
+            const tempValues = data.forecast.hourly.temperature_2m.slice(0, 24);
+            
+            // Filter tides to match the top of each hour (every 10th sample from NOAA)
             const hourlyTides = data.tides.filter((_, i) => i % 10 === 0).slice(0, 24);
 
             // 3. Build Chart
@@ -42,7 +43,7 @@
                             label: 'Tide (ft)',
                             data: hourlyTides,
                             borderColor: '#2196F3',
-                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                            backgroundColor: 'rgba(33, 150, 243, 0.3)',
                             fill: true,
                             yAxisID: 'y1',
                             tension: 0.3
@@ -52,13 +53,17 @@
                 options: {
                     scales: {
                         y: { type: 'linear', position: 'left', title: {display: true, text: 'Temp °F'} },
-                        y1: { type: 'linear', position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'Tide Feet'} }
+                        y1: { 
+                            type: 'linear', 
+                            position: 'right', 
+                            min: -2, // Typical low for Salem
+                            max: 12, // Typical high for Salem
+                            grid: {drawOnChartArea: false}, 
+                            title: {display: true, text: 'Tide Feet'} 
+                        }
                     }
                 }
             });
-        }).catch(err => {
-            document.getElementById('hl').innerText = "Error loading data. Check Actions tab.";
-            console.error(err);
         });
     </script>
 </body>
