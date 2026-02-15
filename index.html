@@ -1,70 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Wyman Cove Hyperlocal</title>
+    <title>Wyman Cove Monitor</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f9; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center;}
-        .hl-summary { font-size: 1.2em; font-weight: bold; color: #333; margin-bottom: 10px; text-align: center; }
     </style>
 </head>
 <body>
     <h1>Wyman Cove Monitor</h1>
-    <div id="hl" class="hl-summary">Loading Daily Summary...</div>
-    <div class="card"><canvas id="tempChart"></canvas></div>
+    <h3 id="hl">Loading data...</h3>
+    <div class="card"><canvas id="myChart"></canvas></div>
 
     <script>
-        fetch('weather_data.json?t=' + Date.now()).then(r => r.json()).then(data => {
-            // 1. Set High/Low text
-            if(data.high_low) {
-                document.getElementById('hl').innerText = `Today's High: ${data.high_low.high.toFixed(1)}°F | Low: ${data.high_low.low.toFixed(1)}°F`;
+        fetch('weather_data.json?t=' + Date.now())
+        .then(r => r.json())
+        .then(data => {
+            // Safety check: if data is missing, tell us on screen instead of going blank
+            if (!data.temp_values || !data.tide_values) {
+                document.getElementById('hl').innerText = "Data file found, but contents are empty or wrong.";
+                return;
             }
 
-            // 2. Align 24 hours of data
-            const labels = data.forecast.hourly.time.slice(0, 24).map(t => new Date(t).getHours() + ":00");
-            const tempValues = data.forecast.hourly.temperature_2m.slice(0, 24);
-            
-            // This filter ensures we only take the tide level at the start of every hour
-            const hourlyTides = data.tides.filter((_, i) => i % 10 === 0).slice(0, 24);
+            document.getElementById('hl').innerText = `High: ${data.high}°F | Low: ${data.low}°F`;
 
-            // 3. Render the Dual-Axis Chart
-            new Chart(document.getElementById('tempChart'), {
+            new Chart(document.getElementById('myChart'), {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: data.temp_labels,
                     datasets: [
-                        {
-                            label: 'Temp (°F)',
-                            data: tempValues,
-                            borderColor: '#ff9800',
-                            yAxisID: 'y',
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Tide (ft)',
-                            data: hourlyTides,
-                            borderColor: '#2196F3',
-                            backgroundColor: 'rgba(33, 150, 243, 0.2)',
-                            fill: true,
-                            yAxisID: 'y1',
-                            tension: 0.4
-                        }
+                        { label: 'Temp °F', data: data.temp_values, borderColor: '#ff9800', yAxisID: 'y', tension: 0.3 },
+                        { label: 'Tide ft', data: data.tide_values, borderColor: '#2196F3', backgroundColor: 'rgba(33, 150, 243, 0.2)', fill: true, yAxisID: 'y1', tension: 0.4 }
                     ]
                 },
                 options: {
                     scales: {
-                        y: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Temp °F'} },
-                        y1: { 
-                            type: 'linear', 
-                            display: true, 
-                            position: 'right', 
-                            grid: {drawOnChartArea: false},
-                            title: {display: true, text: 'Tide Height (ft)'}
-                        }
+                        y: { type: 'linear', position: 'left', title: {display: true, text: 'Temp °F'} },
+                        y1: { type: 'linear', position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'Tide Feet'} }
                     }
                 }
             });
+        })
+        .catch(err => {
+            document.getElementById('hl').innerText = "Error: " + err.message;
         });
     </script>
 </body>
