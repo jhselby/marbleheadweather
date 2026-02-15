@@ -1,31 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Marblehead Weather Tracker</title>
+    <title>Wyman Cove Weather</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1 { color: #333; }
+    </style>
 </head>
 <body>
-    <h2>Marblehead, MA: 3-Day Temperature Forecast</h2>
-    <canvas id="weatherChart" width="400" height="200"></canvas>
+    <h1>Wyman Cove Monitor</h1>
+    
+    <div class="card">
+        <h3>Current Conditions (Beverly Airport)</h3>
+        <p id="current-obs">Loading latest reality...</p>
+    </div>
+
+    <div class="card">
+        <canvas id="tempChart"></canvas>
+    </div>
 
     <script>
-        fetch('weather_data.json')
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('weatherChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.hourly.time.map(t => new Date(t).toLocaleString()),
-                        datasets: [{
-                            label: 'Temperature (°F)',
-                            data: data.hourly.temperature_2m,
-                            borderColor: 'rgb(75, 192, 192)',
-                            tension: 0.1
-                        }]
-                    }
-                });
+        fetch('weather_data.json').then(r => r.json()).then(data => {
+            // Display the "Actual" data we just pulled
+            const actual = data.current_actual;
+            document.getElementById('current-obs').innerHTML = 
+                `<strong>Temperature:</strong> ${actual.temp.toFixed(1)}°F <br>` +
+                `<strong>Wind Speed:</strong> ${actual.wind.toFixed(1)} mph`;
+
+            // Setup the Forecast Chart
+            const ctx = document.getElementById('tempChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.forecast.hourly.time.map(t => new Date(t).getHours() + ":00"),
+                    datasets: [{
+                        label: 'Forecasted Temp (°F)',
+                        data: data.forecast.hourly.temperature_2m,
+                        borderColor: '#ff6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: true
+                    }]
+                },
+                options: { plugins: { title: { display: true, text: 'Next 24 Hours' } } }
             });
+        });
     </script>
 </body>
 </html>
