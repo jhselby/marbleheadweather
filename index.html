@@ -7,10 +7,12 @@
         body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f9; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .sun-times { display: flex; justify-content: space-around; font-weight: bold; color: #555; }
+        .timestamp { text-align: right; font-size: 0.8em; color: #888; margin-top: -10px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
     <h1>Wyman Cove Monitor</h1>
+    <div id="last-updated" class="timestamp">Checking status...</div>
     
     <div class="card sun-times">
         <span id="sunrise">Sunrise: --:--</span>
@@ -25,11 +27,16 @@
     <div class="card"><canvas id="tempChart"></canvas></div>
 
     <script>
-        fetch('weather_data.json').then(r => r.json()).then(data => {
+        fetch('weather_data.json?t=' + new Date().getTime()).then(r => r.json()).then(data => {
+            // Update Timestamp
+            const now = new Date();
+            document.getElementById('last-updated').innerText = "Data refreshed: " + now.toLocaleTimeString();
+
             // Sun Times Logic
             const sun = data.forecast.daily;
-            document.getElementById('sunrise').innerText = "Sunrise: " + new Date(sun.sunrise[0]).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('sunset').innerText = "Sunset: " + new Date(sun.sunset[0]).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const formatTime = (iso) => new Date(iso).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('sunrise').innerText = "Sunrise: " + formatTime(sun.sunrise[0]);
+            document.getElementById('sunset').innerText = "Sunset: " + formatTime(sun.sunset[0]);
 
             // Actuals Logic
             const actual = data.current_actual;
@@ -44,6 +51,7 @@
                         label: 'Wyman Cove Forecast (°F)',
                         data: data.forecast.hourly.temperature_2m,
                         borderColor: '#2196F3',
+                        tension: 0.3,
                         fill: false
                     }]
                 }
