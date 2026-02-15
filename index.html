@@ -12,22 +12,20 @@
 <body>
     <h1>Wyman Cove Monitor</h1>
     <div id="hl" class="hl-summary">Loading Daily Summary...</div>
-    
     <div class="card"><canvas id="tempChart"></canvas></div>
 
     <script>
         fetch('weather_data.json?t=' + Date.now()).then(r => r.json()).then(data => {
-            // 1. Update High/Low Summary
-            if (data.high_low) {
-                document.getElementById('hl').innerText = `Today's High: ${data.high_low.high.toFixed(1)}°F | Low: ${data.high_low.low.toFixed(1)}°F`;
-            }
+            // 1. Update High/Low
+            document.getElementById('hl').innerText = `Today's High: ${data.high_low.high.toFixed(1)}°F | Low: ${data.high_low.low.toFixed(1)}°F`;
 
-            // 2. Prepare Data (ensuring lengths match)
+            // 2. Align Tides (Taking only the top of each hour to match weather)
             const labels = data.forecast.hourly.time.map(t => new Date(t).getHours() + ":00");
             const tempValues = data.forecast.hourly.temperature_2m;
-            const tideValues = data.tides || [];
+            // This line ensures we only take the tide points that match our 24 hours
+            const hourlyTides = data.tides.filter((_, i) => i % 10 === 0).slice(0, 24);
 
-            // 3. Build Dual-Axis Chart
+            // 3. Build Chart
             new Chart(document.getElementById('tempChart'), {
                 type: 'line',
                 data: {
@@ -37,13 +35,12 @@
                             label: 'Temp (°F)',
                             data: tempValues,
                             borderColor: '#ff9800',
-                            backgroundColor: 'transparent',
                             yAxisID: 'y',
                             tension: 0.3
                         },
                         {
                             label: 'Tide (ft)',
-                            data: tideValues,
+                            data: hourlyTides,
                             borderColor: '#2196F3',
                             backgroundColor: 'rgba(33, 150, 243, 0.1)',
                             fill: true,
@@ -53,25 +50,16 @@
                     ]
                 },
                 options: {
-                    responsive: true,
                     scales: {
-                        y: { 
-                            type: 'linear', 
-                            display: true, 
-                            position: 'left',
-                            title: { display: true, text: 'Temperature (°F)' }
-                        },
-                        y1: { 
-                            type: 'linear', 
-                            display: true, 
-                            position: 'right',
-                            grid: { drawOnChartArea: false },
-                            title: { display: true, text: 'Tide Height (ft)' }
-                        }
+                        y: { type: 'linear', position: 'left', title: {display: true, text: 'Temp °F'} },
+                        y1: { type: 'linear', position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'Tide Feet'} }
                     }
                 }
             });
-        }).catch(err => console.error("Chart Error:", err));
+        }).catch(err => {
+            document.getElementById('hl').innerText = "Error loading data. Check Actions tab.";
+            console.error(err);
+        });
     </script>
 </body>
 </html>
