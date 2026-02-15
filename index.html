@@ -16,19 +16,19 @@
 
     <script>
         fetch('weather_data.json?t=' + Date.now()).then(r => r.json()).then(data => {
-            // 1. Update High/Low
+            // 1. Set High/Low text
             if(data.high_low) {
                 document.getElementById('hl').innerText = `Today's High: ${data.high_low.high.toFixed(1)}°F | Low: ${data.high_low.low.toFixed(1)}°F`;
             }
 
-            // 2. Align Data (Top 24 hours)
+            // 2. Align 24 hours of data
             const labels = data.forecast.hourly.time.slice(0, 24).map(t => new Date(t).getHours() + ":00");
             const tempValues = data.forecast.hourly.temperature_2m.slice(0, 24);
             
-            // NOAA sends data every 6 mins; index % 10 grabs the top of every hour
+            // This filter ensures we only take the tide level at the start of every hour
             const hourlyTides = data.tides.filter((_, i) => i % 10 === 0).slice(0, 24);
 
-            // 3. Build Chart
+            // 3. Render the Dual-Axis Chart
             new Chart(document.getElementById('tempChart'), {
                 type: 'line',
                 data: {
@@ -38,10 +38,8 @@
                             label: 'Temp (°F)',
                             data: tempValues,
                             borderColor: '#ff9800',
-                            backgroundColor: 'transparent',
                             yAxisID: 'y',
-                            tension: 0.3,
-                            pointRadius: 2
+                            tension: 0.3
                         },
                         {
                             label: 'Tide (ft)',
@@ -50,27 +48,19 @@
                             backgroundColor: 'rgba(33, 150, 243, 0.2)',
                             fill: true,
                             yAxisID: 'y1',
-                            tension: 0.4,
-                            pointRadius: 0 // Keep the tide line smooth
+                            tension: 0.4
                         }
                     ]
                 },
                 options: {
-                    responsive: true,
                     scales: {
-                        y: { 
-                            type: 'linear', 
-                            display: true, 
-                            position: 'left',
-                            title: { display: true, text: 'Temperature (°F)' }
-                        },
+                        y: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Temp °F'} },
                         y1: { 
                             type: 'linear', 
                             display: true, 
-                            position: 'right',
-                            grid: { drawOnChartArea: false },
-                            title: { display: true, text: 'Tide Height (ft)' },
-                            // Removed 'min/max' to let Chart.js find the data automatically
+                            position: 'right', 
+                            grid: {drawOnChartArea: false},
+                            title: {display: true, text: 'Tide Height (ft)'}
                         }
                     }
                 }
