@@ -6,37 +6,35 @@
     <style>
         body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f9; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 20px 0; text-align: center;}
+        .sun-info { font-size: 0.9em; color: #666; margin-top: 5px; }
     </style>
 </head>
 <body>
     <h1>Wyman Cove Monitor</h1>
-    <div class="card"><h3 id="hl">Syncing with Wyman Cove...</h3></div>
+    <div class="card">
+        <h3 id="hl">Loading...</h3>
+        <div id="sun" class="sun-info"></div>
+    </div>
     <div class="card"><canvas id="myChart"></canvas></div>
 
     <script>
-        fetch('weather_data.json?t=' + Date.now())
-        .then(r => r.json())
-        .then(data => {
-            // Display High/Low
+        fetch('weather_data.json?t=' + Date.now()).then(r => r.json()).then(data => {
+            // Update Text Summary
             document.getElementById('hl').innerText = `High: ${data.high}°F | Low: ${data.low}°F`;
+            document.getElementById('sun').innerText = `Sunrise: ${data.sunrise} | Sunset: ${data.sunset}`;
 
+            // Draw Chart
             new Chart(document.getElementById('myChart'), {
                 type: 'line',
                 data: {
                     labels: data.temp_labels,
                     datasets: [
-                        { 
-                            label: 'Temp °F', 
-                            data: data.temp_values, 
-                            borderColor: '#ff9800', 
-                            yAxisID: 'y', 
-                            tension: 0.3 
-                        },
+                        { label: 'Temp °F', data: data.temp_values, borderColor: '#ff9800', yAxisID: 'y', tension: 0.3 },
                         { 
                             label: 'Tide ft', 
                             data: data.tide_values, 
                             borderColor: '#2196F3', 
-                            backgroundColor: 'rgba(33, 150, 243, 0.2)', 
+                            backgroundColor: 'rgba(33, 150, 243, 0.3)', 
                             fill: true, 
                             yAxisID: 'y1', 
                             tension: 0.4 
@@ -45,14 +43,11 @@
                 },
                 options: {
                     scales: {
-                        y: { type: 'linear', position: 'left', title: {display: true, text: 'Temperature'} },
-                        y1: { type: 'linear', position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'Tide Height'} }
+                        y: { type: 'linear', position: 'left', title: {display: true, text: 'Temp °F'} },
+                        y1: { type: 'linear', position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'Tide Feet'} }
                     }
                 }
             });
-        })
-        .catch(err => {
-            document.getElementById('hl').innerText = "Data file structure error: " + err.message;
         });
     </script>
 </body>
